@@ -2,7 +2,7 @@
 
 A custom Unix shell built in C, supporting I/O redirection, piping, background job control, and built-in commands (`cd`, `jobs`, `exit`).
 
-**Course:** COP 4610 / CGS 5765 — Operating Systems, Florida State University
+**Course:** COP 4610 — Operating Systems, Florida State University
 **Project:** Project 1 — Build a Shell with Fancy Features
 **Group:** 12
 
