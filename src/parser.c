@@ -64,11 +64,17 @@ char **tokenize(const char *line) {
  * design-notes.md in the course project for a worked trace. */
 
 char *expand_env(const char *token) {
-    /* TODO (Part 2, Olivia + Gannon): if token starts with '$', look it
-     * up with getenv() and return a heap copy of the value (or "" if
-     * unset). Remember: never return getenv()'s pointer directly, and
-     * never write through it. */
-    return strdup(token);
+    if (token[0] !='$') {
+	return strdup(token);
+     }
+    const char *name = token + 1;
+    char *value = getenv(name);   
+
+    if (value == NULL) {
+        return strdup(""); 
+    }
+
+    return strdup(value);
 }
 
 char *expand_tilde(const char *token) {

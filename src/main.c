@@ -58,6 +58,11 @@ int main(void) {
             free(line);
             continue; /* blank line */
         }
+	for (int i = 0; tokens[i]; i++) {
+            char *expanded = expand_env(tokens[i]);
+            free(tokens[i]);
+            tokens[i] = expanded;
+        }
 
         /* Placeholder dispatch so the loop is exercisable end to end.
          * Once builtin_exit/cd/jobs are implemented, replace this
