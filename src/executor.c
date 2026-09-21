@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "executor.h"
+#include <unistd.h>
+#include <sys/wait.h>
 
 /* ---- Part 4/5: Gabriel + Olivia (PATH search) / Olivia + Gannon (exec) -
  * Stubbed for now so the rest of the project keeps compiling. See
@@ -16,9 +18,18 @@ char *find_executable(const char *cmd) {
 }
 
 int run_external(char **argv) {
-    (void)argv;
-    /* TODO (Part 5): fork(), execv() in the child, waitpid() in the
-     * parent (unless backgrounded -- coordinate with background.c). */
-    fprintf(stderr, "run_external: not implemented yet\n");
-    return -1;
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        execv(argv[0], argv);
+        perror("execv");
+        _exit(1);
+    } else if (pid > 0) {
+        int status;
+        waitpid(pid, &status, 0);
+        return status;
+    } else {
+        perror("fork");
+        return -1;
+    }
 }
