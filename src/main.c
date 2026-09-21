@@ -32,15 +32,8 @@ static void print_prompt(void) {
     fflush(stdout);
 }
 
-/* This main loop is deliberately a skeleton: prompt -> read -> tokenize
- * -> free, proven to work end to end (see the comprehension check in
- * README/ai-transcripts or ask your tutor). It does NOT yet call
- * find_executable, run_external,
- * run_pipeline, apply_redirection, or the real builtins -- those are
- * stubbed in their own files (parser.c, executor.c, pipes.c,
- * redirection.c, builtins.c, background.c) with TODOs matching the
- * division of labor in divison_of_labor.md. Wire each one in as you
- * implement it, one at a time, and re-test the loop after each change. */
+/* Expand tokens, handle builtins, then resolve and run external commands.
+ * Pipelines, redirection, and background execution still need integration. */
 int main(void) {
     while (1) {
         check_background_jobs(); /* Part 8 -- currently a no-op stub */
@@ -84,11 +77,21 @@ int main(void) {
             break;
         }
 
-        printf("[parsed tokens]");
-        for (int i = 0; tokens[i]; i++) {
-            printf(" [%d]=\"%s\"", i, tokens[i]);
+        /* Builtins must bypass PATH search, even while they are stubs. */
+        if (strcmp(tokens[0], "cd") == 0) {
+            builtin_cd(tokens);
+        } else if (strcmp(tokens[0], "jobs") == 0) {
+            builtin_jobs(tokens);
+        } else {
+            char *executable = find_executable(tokens[0]);
+            if (executable == NULL) {
+                fprintf(stderr, "%s: command not found or not executable\n", tokens[0]);
+            } else {
+                free(tokens[0]);
+                tokens[0] = executable;
+                run_external(tokens);
+            }
         }
-        printf("\n");
 
         for (int i = 0; tokens[i]; i++) free(tokens[i]);
         free(tokens);

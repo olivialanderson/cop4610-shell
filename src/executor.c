@@ -1,19 +1,65 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include "executor.h"
 #include <unistd.h>
 #include <sys/wait.h>
 
-/* ---- Part 4/5: Gabriel + Olivia (PATH search) / Olivia + Gannon (exec) -
- * Stubbed for now so the rest of the project keeps compiling. See
- * executor.h for the exact contract and design-notes.md in the course
- * project for the fork/execv walkthrough and the deep-copy-PATH warning
- * from the TA slides. */
+/* Part 4: resolve executable paths without changing the environment. */
+static int is_executable_file(const char *path) {
+    struct stat info;
+    return stat(path, &info) == 0 && S_ISREG(info.st_mode)
+        && access(path, X_OK) == 0;
+}
 
 char *find_executable(const char *cmd) {
-    (void)cmd;
-    /* TODO (Part 4): handle the cmd-contains-'/' case, then the PATH
-     * search case (deep copy getenv("PATH"), strtok on ':', access()
-     * each candidate). Return NULL (no match) for now. */
+    if (cmd == NULL || cmd[0] == '\0') {
+        return NULL;
+    }
+
+    /* Commands containing a slash bypass PATH entirely. */
+    if (strchr(cmd, '/') != NULL) {
+        return is_executable_file(cmd) ? strdup(cmd) : NULL;
+    }
+
+    const char *path = getenv("PATH");
+    if (path == NULL) {
+        return NULL;
+    }
+    char *path_copy = strdup(path);
+    if (path_copy == NULL) {
+        return NULL;
+    }
+
+    char *directory = path_copy;
+    while (1) {
+        char *separator = strchr(directory, ':');
+        if (separator != NULL) {
+            *separator = '\0';
+        }
+
+        /* Empty PATH entries mean the current directory. */
+        const char *prefix = directory[0] == '\0' ? "." : directory;
+        size_t size = strlen(prefix) + strlen(cmd) + 2;
+        char *candidate = malloc(size);
+        if (candidate == NULL) {
+            free(path_copy);
+            return NULL;
+        }
+        snprintf(candidate, size, "%s/%s", prefix, cmd);
+        if (is_executable_file(candidate)) {
+            free(path_copy);
+            return candidate;
+        }
+        free(candidate);
+
+        if (separator == NULL) {
+            break;
+        }
+        directory = separator + 1;
+    }
+    free(path_copy);
     return NULL;
 }
 

@@ -11,11 +11,11 @@
  * Rules from the handout + TA slides:
  *  - if `cmd` contains a '/', treat it as a literal path: check with
  *    access(cmd, X_OK) and return a copy of `cmd` (or NULL).
- *  - else, deep-copy getenv("PATH") FIRST (never strtok the real env
- *    string -- that corrupts the process's actual $PATH), strtok() it on
- *    ':', and for each directory build "dir/cmd" and access(..., X_OK)
- *    it. Return a copy of the first match.
- * NOT YET IMPLEMENTED. */
+ *  - otherwise, search a private copy of PATH in directory order.
+ *    Empty entries mean the current directory; an unset PATH has no matches.
+ *  - matches must be regular files with execute permission.
+ * Returns NULL for an empty command or allocation failure as well.
+ * The environment's PATH is never modified. */
 char *find_executable(const char *cmd);
 
 /* ---- Part 5: External Command Execution (Olivia + Gannon) -------------
@@ -31,7 +31,7 @@ char *find_executable(const char *cmd);
  * that -- this function should take a flag or be called differently for
  * background jobs; work that integration out with whoever owns
  * background.c).
- * NOT YET IMPLEMENTED. */
+ * Background execution is not yet implemented. */
 int run_external(char **argv);
 
 #endif
