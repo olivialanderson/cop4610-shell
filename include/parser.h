@@ -41,7 +41,8 @@ char *expand_env(const char *token);
  * followed by the rest of token after the "~". Otherwise return a heap
  * copy of `token` unchanged (the handout says we do NOT need to handle
  * "~dir1", "dir1~", "~+/dir1", etc.).
- * NOT YET IMPLEMENTED. */
+ * If HOME is unset, return a heap copy of the token unchanged.
+ * Returns NULL if allocation fails. Caller must free the result. */
 char *expand_tilde(const char *token);
 
 #endif

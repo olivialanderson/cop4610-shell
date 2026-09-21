@@ -35,7 +35,7 @@ static void print_prompt(void) {
 /* This main loop is deliberately a skeleton: prompt -> read -> tokenize
  * -> free, proven to work end to end (see the comprehension check in
  * README/ai-transcripts or ask your tutor). It does NOT yet call
- * expand_env/expand_tilde, find_executable, run_external,
+ * find_executable, run_external,
  * run_pipeline, apply_redirection, or the real builtins -- those are
  * stubbed in their own files (parser.c, executor.c, pipes.c,
  * redirection.c, builtins.c, background.c) with TODOs matching the
@@ -58,8 +58,17 @@ int main(void) {
             free(line);
             continue; /* blank line */
         }
-	for (int i = 0; tokens[i]; i++) {
-            char *expanded = expand_env(tokens[i]);
+        for (int i = 0; tokens[i]; i++) {
+            /* Expand the original token once; do not reinterpret values. */
+            char *expanded = tokens[i][0] == '$'
+                ? expand_env(tokens[i]) : expand_tilde(tokens[i]);
+            if (expanded == NULL) {
+                perror("token expansion");
+                for (int j = 0; tokens[j]; j++) free(tokens[j]);
+                free(tokens);
+                free(line);
+                return 1;
+            }
             free(tokens[i]);
             tokens[i] = expanded;
         }

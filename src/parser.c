@@ -55,13 +55,7 @@ char **tokenize(const char *line) {
     return tokens;
 }
 
-/* ---- Part 2/3: Olivia + Gannon's work starts here ---------------------
- * These are stubbed so the project keeps compiling for everyone else
- * while you two implement the real behavior. Right now they just hand
- * back an unmodified copy of the token, which is why running the shell
- * won't actually expand $USER or ~ yet. See parser.h for the exact
- * contract (what each function must return in each case) and
- * design-notes.md in the course project for a worked trace. */
+/* ---- Parts 2/3: Environment variable and tilde expansion ------------- */
 
 char *expand_env(const char *token) {
     if (token[0] !='$') {
@@ -78,8 +72,22 @@ char *expand_env(const char *token) {
 }
 
 char *expand_tilde(const char *token) {
-    /* TODO (Part 3, Olivia + Gannon): handle exactly "~" and the "~/..."
-     * prefix case by substituting getenv("HOME"). Leave every other
-     * token untouched. */
-    return strdup(token);
+    /* Only a standalone tilde or a leading "~/" expands. */
+    if (token[0] != '~' || (token[1] != '\0' && token[1] != '/')) {
+        return strdup(token);
+    }
+
+    const char *home = getenv("HOME");
+    if (home == NULL) {
+        return strdup(token); /* Preserve the path when HOME is unset. */
+    }
+
+    /* Skip the tilde, retaining any slash and remaining path. */
+    char *expanded = malloc(strlen(home) + strlen(token + 1) + 1);
+    if (expanded == NULL) {
+        return NULL;
+    }
+    strcpy(expanded, home);
+    strcat(expanded, token + 1);
+    return expanded;
 }
