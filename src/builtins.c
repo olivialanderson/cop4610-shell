@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "builtins.h"
 
 /* ---- Part 9: Gabriel + Olivia ------------------------------------------
@@ -18,11 +20,21 @@ int builtin_exit(char **argv) {
 }
 
 int builtin_cd(char **argv) {
-    (void)argv;
-    /* TODO (Part 9): chdir() with 0 args -> $HOME, 1 arg -> that path;
-     * error on >1 arg, nonexistent path, or a path that isn't a
-     * directory. */
-    fprintf(stderr, "cd: not implemented yet\n");
+    char *target;
+
+    if (argv[1] == NULL) {
+        target = getenv("HOME");
+    } else if (argv[2] != NULL) {
+        fprintf(stderr, "cd: too many arguments\n");
+        return 1;
+    } else {
+        target = argv[1];
+    }
+
+    if (chdir(target) != 0) {
+        perror("cd");
+    }
+
     return 1;
 }
 
