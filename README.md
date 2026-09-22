@@ -2,7 +2,7 @@
 
 A custom Unix shell built in C, supporting I/O redirection, piping, background job control, and built-in commands (`cd`, `jobs`, `exit`).
 
-**Course:** COP 4610 — Operating Systems, Florida State University
+**Course:** COP 4610 — Operating Systems
 **Project:** Project 1 — Build a Shell with Fancy Features
 **Group:** 12
 
@@ -81,11 +81,11 @@ See [`division_of_labor.md`](./division_of_labor.md) for the original task assig
 
 | Part | Completed By |
 |---|---|
-| Prompt | |
-| Environment Variables | |
-| Tilde Expansion | |
-| $PATH Search | |
-| External Command Execution | |
+| Prompt | olivia|
+| Environment Variables | olivia |
+| Tilde Expansion | gannon |
+| $PATH Search | gabe |
+| External Command Execution | olivia |
 | I/O Redirection | |
 | Piping | |
 | Background Processing | |
@@ -95,22 +95,24 @@ See [`division_of_labor.md`](./division_of_labor.md) for the original task assig
 ## Development Log
 
 ### Gabriel Valladares-Ruiz
-- [Date] — [What was worked on]
+- [9/21/26] — [debugged linprog ssh on computer, implemented part 4 path search]
 - [Date] — [What was worked on]
 
 ### Olivia Anderson
-- [Date] — [What was worked on]
-- [Date] — [What was worked on]
+- [9/14/26] — [made github link, created division of labor, and started README]
+- [9/20/26] — [added skeleton: prompt loop, tokenizer, stubbed modules]
+- [9/21/26] — [implemented environment variable expansion, wire into main loop, added .gitignore for bin/obj, and external command execution]
+- [9/22/26] — [implemented builtin_cd]
 
 ### Gannon Wooley
-- [Date] — [What was worked on]
+- [9/21/26] — [implemented part 3 tilde expression, remove build artifacts from version control]
 - [Date] — [What was worked on]
 
 ## Group Meetings
 
 | Date | Attendees | Summary |
 |---|---|---|
-| | | |
+| 9/21/26 | everyone | ensured project was up and running on everyone's computer. completed parts 1-5 |
 | | | |
 
 ## Extra Credit
