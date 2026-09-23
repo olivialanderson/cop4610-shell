@@ -34,4 +34,7 @@ char *find_executable(const char *cmd);
  * Background execution is not yet implemented. */
 int run_external(char **argv);
 
+/* Foreground execution with optional redirection applied only in the child. */
+int run_external_redirected(char **argv, const char *infile, const char *outfile);
+
 #endif

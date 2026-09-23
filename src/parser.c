@@ -34,16 +34,33 @@ char **tokenize(const char *line) {
         exit(1);
     }
 
-    char *saveptr = NULL;
-    char *tok = strtok_r(copy, " \t", &saveptr);
-    while (tok != NULL && count < MAX_TOKENS) {
-        tokens[count] = strdup(tok);
+    const char *cursor = copy;
+    while (*cursor != '\0') {
+        while (*cursor == ' ' || *cursor == '\t') cursor++;
+        if (*cursor == '\0') break;
+        if (count == MAX_TOKENS) {
+            fprintf(stderr, "too many tokens\n");
+            for (int i = 0; i < count; i++) free(tokens[i]);
+            free(tokens);
+            free(copy);
+            return NULL;
+        }
+        const char *start = cursor;
+        if (strchr("<>|&", *cursor) != NULL) {
+            cursor++;
+        } else {
+            while (*cursor != '\0' && *cursor != ' ' && *cursor != '\t'
+                   && strchr("<>|&", *cursor) == NULL) cursor++;
+        }
+        size_t length = (size_t)(cursor - start);
+        tokens[count] = malloc(length + 1);
         if (tokens[count] == NULL) {
-            perror("strdup");
+            perror("malloc");
             exit(1);
         }
+        memcpy(tokens[count], start, length);
+        tokens[count][length] = '\0';
         count++;
-        tok = strtok_r(NULL, " \t", &saveptr);
     }
     tokens[count] = NULL;
     free(copy);

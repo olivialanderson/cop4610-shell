@@ -9,16 +9,13 @@
  * free() it. Returns NULL on EOF (Ctrl+D). */
 char *read_line(void);
 
-/* Splits `line` on whitespace into a NULL-terminated array of heap-owned
+/* Splits whitespace and separates <, >, |, & into a NULL-terminated array of heap-owned
  * C-strings. Caller owns the array AND every string inside it:
  *   for (int i = 0; tokens[i]; i++) free(tokens[i]);
  *   free(tokens);
  * Returns NULL if the line was empty/whitespace-only.
  *
- * NOTE: this does NOT yet do $VAR / ~ expansion or |,<,>,& symbol
- * splitting -- those are the next two passes (see below), owned by
- * Olivia + Gannon per divison_of_labor.md (Parts 2-3) and the
- * command-table split (part of Part 4/6/7 prep). */
+ * Expansion and command parsing are performed by the caller. */
 char **tokenize(const char *line);
 
 /* ---- Part 2: Environment Variables (Olivia + Gannon) ------------------ */

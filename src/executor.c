@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <errno.h>
+#include "redirection.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -64,15 +66,26 @@ char *find_executable(const char *cmd) {
 }
 
 int run_external(char **argv) {
+    return run_external_redirected(argv, NULL, NULL);
+}
+
+int run_external_redirected(char **argv, const char *infile, const char *outfile) {
     pid_t pid = fork();
 
     if (pid == 0) {
+        if (apply_redirection(infile, outfile) == -1) {
+            _exit(1);
+        }
         execv(argv[0], argv);
         perror("execv");
         _exit(1);
     } else if (pid > 0) {
         int status;
-        waitpid(pid, &status, 0);
+        while (waitpid(pid, &status, 0) == -1) {
+            if (errno == EINTR) continue;
+            perror("waitpid");
+            return -1;
+        }
         return status;
     } else {
         perror("fork");
