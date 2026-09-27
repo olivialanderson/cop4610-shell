@@ -1,7 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define MAX_TOKENS 128
 
 /* ---- Part 0/1 groundwork (buildable now) ------------------------------ */
 
@@ -27,8 +26,7 @@ char **tokenize(const char *line);
  * `token` unchanged. Never return the pointer getenv() gave you directly:
  * always build a fresh copy, since callers will free() whatever you
  * return and you must never mutate/free what getenv() returned.
- * NOT YET IMPLEMENTED -- see design-notes.md in the course project for
- * the worked example and edge cases (undefined var, non-$ token). */
+ * The caller owns the result. */
 char *expand_env(const char *token);
 
 /* ---- Part 3: Tilde Expansion (Olivia + Gannon) ------------------------ */

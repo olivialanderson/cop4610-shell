@@ -20,7 +20,8 @@ char *read_line(void) {
 }
 
 char **tokenize(const char *line) {
-    char **tokens = malloc(sizeof(char *) * (MAX_TOKENS + 1));
+    size_t capacity = 16;
+    char **tokens = malloc(sizeof(char *) * capacity);
     if (tokens == NULL) {
         perror("malloc");
         exit(1);
@@ -38,12 +39,11 @@ char **tokenize(const char *line) {
     while (*cursor != '\0') {
         while (*cursor == ' ' || *cursor == '\t') cursor++;
         if (*cursor == '\0') break;
-        if (count == MAX_TOKENS) {
-            fprintf(stderr, "too many tokens\n");
-            for (int i = 0; i < count; i++) free(tokens[i]);
-            free(tokens);
-            free(copy);
-            return NULL;
+        if ((size_t)count + 1 >= capacity) {
+            capacity *= 2;
+            char **grown = realloc(tokens, capacity * sizeof(char *));
+            if (grown == NULL) { perror("tokens"); exit(1); }
+            tokens = grown;
         }
         const char *start = cursor;
         if (strchr("<>|&", *cursor) != NULL) {
@@ -75,14 +75,14 @@ char **tokenize(const char *line) {
 /* ---- Parts 2/3: Environment variable and tilde expansion ------------- */
 
 char *expand_env(const char *token) {
-    if (token[0] !='$') {
-	return strdup(token);
-     }
+    if (token[0] != '$') {
+        return strdup(token);
+    }
     const char *name = token + 1;
-    char *value = getenv(name);   
+    char *value = getenv(name);
 
     if (value == NULL) {
-        return strdup(""); 
+        return strdup("");
     }
 
     return strdup(value);

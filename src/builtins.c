@@ -1,53 +1,76 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <limits.h>
 #include "builtins.h"
+#include "background.h"
+static char *history[3];
+static int history_count;
 
-/* ---- Part 9: Gabriel + Olivia ------------------------------------------
- * Stubbed so the rest of the project keeps compiling. See builtins.h for
- * the exact contract for each builtin and design-notes.md for the
- * exit/cd/jobs error cases called out in the handout. Remember: none of
- * these may call execv() -- they run directly in the shell's process. */
-
-int builtin_exit(char **argv) {
-    (void)argv;
-    /* TODO (Part 9): call wait_all_background_jobs() (background.h),
-     * print the last up-to-3 valid commands, free owned memory, then
-     * exit(0). Returning from here (rather than exiting) is a bug --
-     * main.c currently handles "exit" itself as a placeholder; once this
-     * is implemented, move that responsibility here. */
-    return 1;
+int is_builtin(const char *name) {
+    return strcmp(name, "cd") == 0 || strcmp(name, "jobs") == 0
+        || strcmp(name, "exit") == 0;
 }
-
 int builtin_cd(char **argv) {
-    char *target;
-
-    if (argv[1] == NULL) {
-        target = getenv("HOME");
-    } else if (argv[2] != NULL) {
+    if (argv[1] != NULL && argv[2] != NULL) {
         fprintf(stderr, "cd: too many arguments\n");
         return 1;
-    } else {
-        target = argv[1];
     }
-
-    if (chdir(target) != 0) {
+    const char *target = argv[1] == NULL ? getenv("HOME") : argv[1];
+    if (target == NULL) {
+        fprintf(stderr, "cd: HOME is not set\n");
+        return 1;
+    }
+    if (chdir(target) == -1) {
         perror("cd");
+        return 1;
     }
-
-    return 1;
+    /* Keep environment expansion consistent with the directory in the prompt. */
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        perror("cd: getcwd");
+        return 1;
+    }
+    if (setenv("PWD", cwd, 1) == -1) {
+        perror("cd: PWD");
+        return 1;
+    }
+    return 0;
 }
-
 int builtin_jobs(char **argv) {
-    (void)argv;
-    /* TODO (Part 9): call print_jobs() (background.h) once it's real. */
-    fprintf(stderr, "jobs: not implemented yet\n");
-    return 1;
+    if (argv[1] != NULL) {
+        fprintf(stderr, "jobs: no arguments expected\n");
+        return 1;
+    }
+    print_jobs();
+    return 0;
 }
-
 void record_valid_command(const char *cmdline) {
-    (void)cmdline;
-    /* TODO (Part 9, feeds `exit`): keep a ring buffer of the last 3
-     * valid command lines (a fixed array of 3 char* plus a count is
-     * enough -- you don't need anything fancier). */
+    char *copy = strdup(cmdline);
+    if (copy == NULL) {
+        perror("command history");
+        return;
+    }
+    if (history_count == 3) {
+        free(history[0]);
+        history[0] = history[1];
+        history[1] = history[2];
+        history_count--;
+    }
+    history[history_count++] = copy;
+}
+int builtin_exit(char **argv) {
+    if (argv != NULL && argv[1] != NULL) {
+        fprintf(stderr, "exit: no arguments expected\n");
+        return 1;
+    }
+    wait_all_background_jobs();
+    puts("Command history:");
+    if (history_count == 0) puts("no valid commands");
+    else if (history_count < 3) puts(history[history_count - 1]);
+    else for (int i = 0; i < history_count; i++) puts(history[i]);
+    for (int i = 0; i < history_count; i++) free(history[i]);
+    history_count = 0;
+    return 0;
 }

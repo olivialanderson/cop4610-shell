@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -Wextra -g -Iinclude
+CFLAGS := -Wall -Wextra -g -Iinclude -MMD -MP
 SRC := $(wildcard src/*.c)
 OBJ := $(patsubst src/%.c,obj/%.o,$(SRC))
 BIN := bin/shell
@@ -19,3 +19,5 @@ obj bin:
 
 clean:
 	rm -rf obj bin
+
+-include $(OBJ:.o=.d)
