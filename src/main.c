@@ -121,15 +121,23 @@ int main(void) {
             }
         }
         if (valid) {
+            /* Reap in the parent after input: jobs may finish while we wait. */
+            check_background_jobs();
             int result;
+            int record_command = 0;
             if (n == 1 && is_builtin(cmds[0].argv[0])) {
                 if (background) {
                     fprintf(stderr, "builtins cannot be backgrounded\n");
                     result = 1;
                 } else result = run_builtin(&cmds[0], &should_exit);
-            } else result = run_pipeline(cmds, n, background, line);
+                record_command = result == 0 && !should_exit;
+            } else {
+                result = run_pipeline(cmds, n, background, line);
+                /* A nonzero program exit status does not invalidate its command. */
+                record_command = result >= 0;
+            }
             /* Do not record exit itself; history describes preceding commands. */
-            if (result == 0 && !should_exit) record_valid_command(line);
+            if (record_command) record_valid_command(line);
         }
         for (int i = 0; i < n; i++) {
             for (int j = 0; cmds[i].argv[j]; j++) free(cmds[i].argv[j]);

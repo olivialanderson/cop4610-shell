@@ -12,9 +12,9 @@
 
 int run_pipeline(cmd_t *cmds, int n, int background, const char *cmdline) {
     pid_t *pids = calloc((size_t)n, sizeof(pid_t));
-    if (pids == NULL) { perror("pipeline allocation"); return 1; }
+    if (pids == NULL) { perror("pipeline allocation"); return -1; }
     int slot = background ? reserve_background_job(n, cmdline) : -1;
-    if (background && slot == -1) { free(pids); return 1; }
+    if (background && slot == -1) { free(pids); return -1; }
     int previous = -1;
     int started = 0;
     fflush(NULL);
@@ -65,16 +65,20 @@ int run_pipeline(cmd_t *cmds, int n, int background, const char *cmdline) {
         free(pids);
         return 0;
     }
-    int failed = 0;
+    int wait_failed = 0;
+    int last_status = 0;
     for (int i = 0; i < n; i++) {
         int status;
         pid_t result;
         do { result = waitpid(pids[i], &status, 0); } while (result < 0 && errno == EINTR);
-        if (result < 0) { perror("waitpid"); failed = 1; }
-        else if (i == n - 1 && (!WIFEXITED(status) || WEXITSTATUS(status) != 0)) failed = 1;
+        if (result < 0) { perror("waitpid"); wait_failed = 1; }
+        else if (i == n - 1) {
+            if (WIFEXITED(status)) last_status = WEXITSTATUS(status);
+            else if (WIFSIGNALED(status)) last_status = 128 + WTERMSIG(status);
+        }
     }
     free(pids);
-    return failed;
+    return wait_failed ? -1 : last_status;
 
 failure:
     if (previous != -1) close(previous);
@@ -85,5 +89,5 @@ failure:
     }
     if (slot != -1) cancel_background_job(slot);
     free(pids);
-    return 1;
+    return -1;
 }

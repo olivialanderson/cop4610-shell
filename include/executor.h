@@ -27,11 +27,9 @@ char *find_executable(const char *cmd);
  * returns at all, it failed -- print an error and call _exit() (NOT
  * exit(), to avoid flushing/duplicating the parent's stdio buffers and
  * running atexit handlers twice). In the parent: waitpid() on the child
- * UNLESS this command is meant to run in the background (Part 8 decides
- * that -- this function should take a flag or be called differently for
- * background jobs; work that integration out with whoever owns
- * background.c).
- * Background execution is not yet implemented. */
+ * These helpers wait for foreground commands. Main dispatches foreground and
+ * background pipelines through run_pipeline() in pipes.c; background.c owns
+ * background-job tracking. */
 int run_external(char **argv);
 
 /* Foreground execution with optional redirection applied only in the child. */

@@ -141,13 +141,18 @@ Part 4 PATH search was completed by Gabriel, although Gannon committed it.
   such as fg/bg are outside the assignment's required scope.
 - Background completion is checked in the main loop. Press Enter after a job
   finishes to trigger a completion notice if the shell is waiting for input.
+  Status is refreshed again after input, before displaying a jobs listing.
 - Up to 10 background jobs are supported. Pipeline completion waits for every
   child; the displayed PID belongs to the last pipeline stage.
 - Use input redirection for background commands that need input, rather than
   having them compete with the shell for terminal input.
 - Standalone builtins cannot be backgrounded. Builtins in pipelines execute in
   children, so their directory changes do not affect the parent shell.
-- History includes successful foreground commands and accepted background
-  launches. The last stage determines pipeline success. Exit itself is excluded.
+- History includes syntactically valid external commands with resolved command
+  names whose processes start, regardless of their eventual exit status. Runtime
+  errors, including file-access or exec errors in a child, do not erase that
+  command. Successful standalone builtins and accepted background launches are
+  also recorded. Syntax errors, unresolved names, failed standalone builtins,
+  and pipeline setup/wait failures are excluded. Exit itself is excluded.
   Exit prints the last three commands, only the latest if fewer than three exist,
   or a message if there are none, after waiting for background jobs.

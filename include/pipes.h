@@ -6,6 +6,8 @@ typedef struct {
     char *infile;
     char *outfile;
 } cmd_t;
-/* Returns 0 on foreground success/background launch; nonzero on failure. */
+/* Returns the last foreground stage's exit status, or 0 for a background launch.
+ * Returns -1 for allocation, pipe, fork, job-capacity, or wait failures.
+ * Nonzero program exit statuses still represent valid external commands. */
 int run_pipeline(cmd_t *cmds, int n, int background, const char *cmdline);
 #endif
