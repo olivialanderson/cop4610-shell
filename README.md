@@ -122,7 +122,7 @@ Part 4 PATH search was completed by Gabriel, although Gannon committed it.
 | Date | Attendees | Summary |
 |---|---|---|
 | 9/21/26 | everyone | ensured project was up and running on everyone's computer. completed parts 1-5 |
-
+| 9/28/26 | everyone | last touches and finalize everything, submit |
 ## Extra Credit
 
 - **Unlimited pipes:** token, command, and PID storage is allocated dynamically,
